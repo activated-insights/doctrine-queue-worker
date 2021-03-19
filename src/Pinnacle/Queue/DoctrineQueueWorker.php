@@ -43,7 +43,7 @@ class DoctrineQueueWorker extends Worker
             // since the parent runJob method catches all exceptions that occur during job execution.
             $this->exceptions->report($exception);
             $this->requeueJob($job);
-            $this->killWorkerProcess();
+            $this->signalWorkerProcessShouldStop();
         }
     }
 
@@ -97,7 +97,7 @@ class DoctrineQueueWorker extends Worker
     /**
      * Kills the worker process so it can be restarted by a process supervisor.
      */
-    private function killWorkerProcess(): void
+    private function signalWorkerProcessShouldStop(): void
     {
         $this->shouldQuit = true;
     }
