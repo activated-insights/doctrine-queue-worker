@@ -1,0 +1,31 @@
+name: Basic Continuous Integration
+
+on: [push]
+
+jobs:
+  phpunit-unit:
+    name: PHPUnit Unit Tests
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Cache Composer packages
+        uses: actions/cache@v2
+        with:
+          path: /home/runner/.composer/cache/files
+          key: composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install Composer dependencies
+        run: composer install --dev --no-interaction --no-progress
+
+      - name: PHPUnit Tests
+        uses: php-actions/phpunit@v2
+        with:
+          bootstrap: vendor/autoload.php
+          configuration: phpunit.xml
+          version: 9
+          php_version: 7.4
+          args: test
