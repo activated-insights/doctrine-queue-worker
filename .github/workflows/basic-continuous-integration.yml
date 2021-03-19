@@ -11,13 +11,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '7.4'
-          extensions: intl
-          tools: composer:v1
-
       - name: Cache Composer packages
         uses: actions/cache@v2
         with:
@@ -28,5 +21,10 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --dev --no-interaction --no-progress
 
-      - name: Execute Unit tests
-        run: vendor/bin/phpunit test
+      - name: PHPUnit Tests
+        uses: php-actions/phpunit@v2
+        with:
+          bootstrap: vendor/autoload.php
+          configuration: phpunit.xml
+          version: 9
+          php_version: 7.4
