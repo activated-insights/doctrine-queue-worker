@@ -9,8 +9,7 @@
 
 ### Installation
 
-- Require the library via Composer: `composer install pinnacle/doctrine-queue-worker`
-- Add the `DoctrineQueueWorkerServiceProvider` class to your `app.php` file.
+- Require the library via Composer: `composer require pinnacle/doctrine-queue-worker`
 
 ### Usage
 
