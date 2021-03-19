@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Pinnacle\Queue;
 
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 use Pinnacle\Queue\Console\DoctrineQueueWorkerCommand;
 
-class DoctrineQueueWorkerServiceProvider extends ServiceProvider
+class DoctrineQueueWorkerServiceProvider extends ServiceProvider implements DeferrableProvider
 {
-    protected $defer = true;
-
     public function register(): void
     {
         $this->registerWorker();
