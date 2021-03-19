@@ -35,7 +35,7 @@ class DoctrineQueueWorker extends Worker
         try {
             $this->assertEntityManagerIsOpen();
             $this->ensureDatabaseConnectionIsOpen();
-            $this->clearEntityManager();
+            $this->ensureEntityManagerIsClear();
 
             parent::runJob($job, $connectionName, $options);
         } catch (Throwable $exception) {
@@ -77,7 +77,7 @@ class DoctrineQueueWorker extends Worker
     /**
      * Clears the EntityManager to ensure that nothing persists between job runs.
      */
-    private function clearEntityManager(): void
+    private function ensureEntityManagerIsClear(): void
     {
         $this->entityManager->clear();
     }
