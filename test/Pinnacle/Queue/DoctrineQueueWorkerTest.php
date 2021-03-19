@@ -63,42 +63,6 @@ class DoctrineQueueWorkerTest extends TestCase
      */
     private WorkerOptions $workerOptions;
 
-    protected function setUp(): void
-    {
-        $this->queueManager   = Mockery::mock(QueueManager::class);
-        $this->queue          = Mockery::mock(Queue::class);
-        $this->dispatcher     = Mockery::mock(Dispatcher::class);
-        $this->entityManager  = Mockery::mock(EntityManagerInterface::class);
-        $this->connection     = Mockery::mock(Connection::class);
-        $this->cache          = Mockery::mock(Repository::class);
-        $this->exceptions     = Mockery::mock(ExceptionHandler::class);
-        $isDownForMaintenance = fn () => false;
-
-        $this->worker = new DoctrineQueueWorker(
-            $this->queueManager,
-            $this->dispatcher,
-            $this->entityManager,
-            $this->exceptions,
-            $isDownForMaintenance
-        );
-        $this->workerOptions = new WorkerOptions(
-            'default',
-            0,
-            128,
-            60,
-            1,
-            3
-        );
-
-        $this->exceptions->shouldIgnoreMissing();
-        $this->entityManager->shouldReceive('getConnection')->andReturn($this->connection);
-    }
-
-    protected function tearDown(): void
-    {
-        Mockery::close();
-    }
-
     /**
      * @test
      */
@@ -225,6 +189,42 @@ class DoctrineQueueWorkerTest extends TestCase
 
         // Assert
         $this->assertFalse($this->worker->shouldQuit);
+    }
+
+    protected function setUp(): void
+    {
+        $this->queueManager   = Mockery::mock(QueueManager::class);
+        $this->queue          = Mockery::mock(Queue::class);
+        $this->dispatcher     = Mockery::mock(Dispatcher::class);
+        $this->entityManager  = Mockery::mock(EntityManagerInterface::class);
+        $this->connection     = Mockery::mock(Connection::class);
+        $this->cache          = Mockery::mock(Repository::class);
+        $this->exceptions     = Mockery::mock(ExceptionHandler::class);
+        $isDownForMaintenance = fn () => false;
+
+        $this->worker = new DoctrineQueueWorker(
+            $this->queueManager,
+            $this->dispatcher,
+            $this->entityManager,
+            $this->exceptions,
+            $isDownForMaintenance
+        );
+        $this->workerOptions = new WorkerOptions(
+            'default',
+            0,
+            128,
+            60,
+            1,
+            3
+        );
+
+        $this->exceptions->shouldIgnoreMissing();
+        $this->entityManager->shouldReceive('getConnection')->andReturn($this->connection);
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
     }
 
     /**
