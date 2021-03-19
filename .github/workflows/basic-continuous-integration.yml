@@ -29,4 +29,4 @@ jobs:
         run: composer install --dev --no-interaction --no-progress
 
       - name: Execute Unit tests
-        run: vendor/bin/phpunit --testsuite=Unit
+        run: vendor/bin/phpunit test
