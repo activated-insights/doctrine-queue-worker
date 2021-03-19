@@ -54,10 +54,12 @@ class DoctrineQueueWorkerTest extends TestCase
      * @var MockInterface|ExceptionHandler
      */
     private MockInterface $exceptions;
+
     /**
      * @var DoctrineQueueWorker
      */
     private DoctrineQueueWorker $worker;
+
     /**
      * @var WorkerOptions
      */
