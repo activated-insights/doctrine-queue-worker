@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Pinnacle\Queue;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 use Pinnacle\Queue\Console\DoctrineQueueWorkerCommand;
@@ -32,15 +34,15 @@ class DoctrineQueueWorkerServiceProvider extends ServiceProvider implements Defe
     {
         $this->app->singleton(
             DoctrineQueueWorker::class,
-            function ($app): DoctrineQueueWorker {
-                $isDownForMaintenance = function () {
+            function (Application $app): DoctrineQueueWorker {
+                $isDownForMaintenance = function (): bool {
                     return $this->app->isDownForMaintenance();
                 };
 
                 return new DoctrineQueueWorker(
                     $app['queue'],
                     $app['events'],
-                    $app['em'],
+                    $app[EntityManagerInterface::class],
                     $app[ExceptionHandler::class],
                     $isDownForMaintenance
                 );
