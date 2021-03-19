@@ -1,0 +1,34 @@
+{
+  "name": "pinnacle/doctrine-queue-worker",
+  "description": "A worker for Laravel applications that interact with Doctrine",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Cody Woolsey",
+      "email": "cody.woolsey@pinnacleqi.com"
+    },
+    {
+      "name": "Chris Schwerdt",
+      "email": "chris.schwerdt@pinnacleqi.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.4",
+    "illuminate/queue": "^8.0",
+    "laravel-doctrine/orm": "^1.5"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.3",
+    "mockery/mockery": "^1.3.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Pinnacle\\Queue\\": "src/Pinnacle/Queue"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "test\\Pinnacle\\Queue\\": "tests/"
+    }
+  }
+}
