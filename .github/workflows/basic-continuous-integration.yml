@@ -18,9 +18,6 @@ jobs:
           extensions: intl
           tools: composer:v1
 
-      - name: Copy .env
-        run: cp .env.testing .env
-
       - name: Cache Composer packages
         uses: actions/cache@v2
         with:
