@@ -1,9 +1,16 @@
 # doctrine-queue-worker
-**doctrine-queue-worker** is a package intended address some issues with running Laravel 8.x queue worker processes with an application that interacts with the Doctrine ORM.
+**doctrine-queue-worker** is a package intended to address common issues with running Laravel 8.x queue worker processes with an application that interacts with the Doctrine ORM.
+
 ### Features
 
-- Re-queues jobs and kills the worker process when the Doctrine EntityManager closes due to an exception.
-- Re-queues jobs and kills the worker process when the connection to the database dies.
+- Re-queues jobs and kills the worker process when the `EntityManager` closes due to an exception.
+- Ensures the `EntityManager`'s database connection remains open between jobs.
+- Clears the `EntityManager` between job executions.
+
+### Installation
+
+- Require the library via Composer: `composer install pinnacle/doctrine-queue-worker`
+- Add the `DoctrineQueueWorkerServiceProvider` class to your `app.php` file.
 
 ### Usage
 
