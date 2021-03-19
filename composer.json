@@ -28,7 +28,14 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "test\\Pinnacle\\Queue\\": "tests/"
+      "test\\Pinnacle\\Queue\\": "test"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Pinnacle\\Queue\\DoctrineQueueWorkerServiceProvider"
+      ]
     }
   }
 }
