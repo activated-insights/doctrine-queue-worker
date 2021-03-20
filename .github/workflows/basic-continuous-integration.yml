@@ -5,7 +5,7 @@ on: [push]
 jobs:
   phpunit-unit:
     name: PHPUnit Unit Tests
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
@@ -28,4 +28,3 @@ jobs:
           configuration: phpunit.xml
           version: 9
           php_version: 7.4
-          args: test
