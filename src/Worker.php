@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pinnacle\Queue;
+namespace Pinnacle\DoctrineQueueWorker;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
@@ -10,11 +10,11 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Queue\Factory as QueueManager;
 use Illuminate\Contracts\Queue\Job;
-use Illuminate\Queue\Worker;
+use Illuminate\Queue\Worker as IlluminateWorker;
 use Illuminate\Queue\WorkerOptions;
 use Throwable;
 
-class DoctrineQueueWorker extends Worker
+class Worker extends IlluminateWorker
 {
     private EntityManagerInterface $entityManager;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pinnacle\Queue;
+namespace Pinnacle\DoctrineQueueWorker\Tests;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,8 +17,9 @@ use Illuminate\Queue\WorkerOptions;
 use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\TestCase;
+use Pinnacle\DoctrineQueueWorker\Worker;
 
-class DoctrineQueueWorkerTest extends TestCase
+class WorkerTest extends TestCase
 {
     /**
      * @var MockInterface|QueueManager
@@ -55,14 +56,8 @@ class DoctrineQueueWorkerTest extends TestCase
      */
     private MockInterface $exceptions;
 
-    /**
-     * @var DoctrineQueueWorker
-     */
-    private DoctrineQueueWorker $worker;
+    private Worker $worker;
 
-    /**
-     * @var WorkerOptions
-     */
     private WorkerOptions $workerOptions;
 
     /**
@@ -204,7 +199,7 @@ class DoctrineQueueWorkerTest extends TestCase
         $this->exceptions     = Mockery::mock(ExceptionHandler::class);
         $isDownForMaintenance = fn () => false;
 
-        $this->worker = new DoctrineQueueWorker(
+        $this->worker = new Worker(
             $this->queueManager,
             $this->dispatcher,
             $this->entityManager,

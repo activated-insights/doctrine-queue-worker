@@ -1,17 +1,17 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
-namespace Pinnacle\Queue;
+namespace Pinnacle\DoctrineQueueWorker;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
-use Pinnacle\Queue\Console\DoctrineQueueWorkerCommand;
+use Pinnacle\DoctrineQueueWorker\Console\WorkCommand;
 
-class DoctrineQueueWorkerServiceProvider extends ServiceProvider implements DeferrableProvider
+class WorkerServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     public function register(): void
     {
@@ -25,21 +25,21 @@ class DoctrineQueueWorkerServiceProvider extends ServiceProvider implements Defe
     public function provides(): array
     {
         return [
-            DoctrineQueueWorkerCommand::class,
-            DoctrineQueueWorker::class
+            WorkCommand::class,
+            Worker::class,
         ];
     }
 
     private function registerWorker(): void
     {
         $this->app->singleton(
-            DoctrineQueueWorker::class,
-            function (Application $app): DoctrineQueueWorker {
+            Worker::class,
+            function (Application $app): Worker {
                 $isDownForMaintenance = function (): bool {
                     return $this->app->isDownForMaintenance();
                 };
 
-                return new DoctrineQueueWorker(
+                return new Worker(
                     $app['queue'],
                     $app['events'],
                     $app[EntityManagerInterface::class],
@@ -53,8 +53,8 @@ class DoctrineQueueWorkerServiceProvider extends ServiceProvider implements Defe
     private function registerWorkCommand(): void
     {
         $this->app->singleton(
-            DoctrineQueueWorkerCommand::class,
-            fn ($app) => new DoctrineQueueWorkerCommand($app[DoctrineQueueWorker::class], $app['cache'])
+            WorkCommand::class,
+            fn($app) => new WorkCommand($app[Worker::class], $app['cache'])
         );
     }
 }

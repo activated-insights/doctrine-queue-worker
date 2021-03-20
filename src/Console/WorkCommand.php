@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Pinnacle\Queue\Console;
+namespace Pinnacle\DoctrineQueueWorker\Console;
 
 use Illuminate\Contracts\Cache\Repository as Cache;
-use Illuminate\Queue\Console\WorkCommand;
+use Illuminate\Queue\Console\WorkCommand as IlluminateWorkCommand;
 use Illuminate\Queue\Worker;
 
-class DoctrineQueueWorkerCommand extends WorkCommand
+class WorkCommand extends IlluminateWorkCommand
 {
     protected $signature   = 'doctrine:queue:work';
 
