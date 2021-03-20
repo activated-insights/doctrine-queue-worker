@@ -30,6 +30,17 @@ class WorkerServiceProvider extends ServiceProvider implements DeferrableProvide
         ];
     }
 
+    public function boot()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands(
+                [
+                    WorkCommand::class,
+                ]
+            );
+        }
+    }
+
     private function registerWorker(): void
     {
         $this->app->singleton(
