@@ -30,7 +30,7 @@ class WorkerServiceProvider extends ServiceProvider implements DeferrableProvide
         ];
     }
 
-    public function boot()
+    public function boot(): void
     {
         if ($this->app->runningInConsole()) {
             $this->commands(
@@ -65,7 +65,7 @@ class WorkerServiceProvider extends ServiceProvider implements DeferrableProvide
     {
         $this->app->singleton(
             WorkCommand::class,
-            fn($app) => new WorkCommand($app[Worker::class], $app['cache'])
+            fn($app) => new WorkCommand($app[Worker::class], $app['cache.store'])
         );
     }
 }
