@@ -21,15 +21,7 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --dev --no-interaction --no-progress
 
-      - name: PHPUnit Tests (PHP 7.4)
-        uses: php-actions/phpunit@v2
-        with:
-          bootstrap: vendor/autoload.php
-          configuration: phpunit.xml
-          version: 9
-          php_version: 7.4
-
-      - name: PHPUnit Tests (PHP 8.0)
+      - name: PHPUnit Tests
         uses: php-actions/phpunit@v2
         with:
           bootstrap: vendor/autoload.php
