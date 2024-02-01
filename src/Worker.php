@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Pinnacle\DoctrineQueueWorker;
 
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\ORMException;
+use Doctrine\ORM\Exception\ORMException;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Queue\Factory as QueueManager;
@@ -19,17 +20,20 @@ class Worker extends IlluminateWorker
     private EntityManagerInterface $entityManager;
 
     public function __construct(
-        QueueManager $manager,
-        Dispatcher $events,
+        QueueManager           $manager,
+        Dispatcher             $events,
         EntityManagerInterface $entityManager,
-        ExceptionHandler $exceptions,
-        callable $isDownForMaintenance
+        ExceptionHandler       $exceptions,
+        callable               $isDownForMaintenance
     ) {
         $this->entityManager = $entityManager;
 
         parent::__construct($manager, $events, $exceptions, $isDownForMaintenance);
     }
 
+    /**
+     * @throws Throwable
+     */
     protected function runJob($job, $connectionName, WorkerOptions $options): void
     {
         try {
@@ -64,11 +68,22 @@ class Worker extends IlluminateWorker
     /**
      * Pings the EntityManager's database connection to ensure that it is still open. If the connection is not open,
      * this method will attempt to re-open the connection.
+     *
+     * @throws Exception
      */
     private function ensureDatabaseConnectionIsOpen(): void
     {
         $connection = $this->entityManager->getConnection();
-        if (!$connection->ping()) {
+
+        // This replicates what the deprecated ping() function used to do.
+        try {
+            $connection->executeQuery($connection->getDatabasePlatform()->getDummySelectSQL());
+            $ping = true;
+        } catch (Exception $e) {
+            $ping = false;
+        }
+
+        if (!$ping) {
             $connection->close();
             $connection->connect();
         }
@@ -83,7 +98,7 @@ class Worker extends IlluminateWorker
     }
 
     /**
-     * Immediately places the job back on the queue so it can be handled by a different worker process (or the same
+     * Immediately places the job back on the queue, so it can be handled by a different worker process (or the same
      * worker process if it restarts before the job is processed). We don't respect the configured "backoff" option
      * for the job here, since if we reach this point it means the job was never actually processed.
      */
@@ -95,7 +110,7 @@ class Worker extends IlluminateWorker
     }
 
     /**
-     * Kills the worker process so it can be restarted by a process supervisor.
+     * Kills the worker process, so it can be restarted by a process supervisor.
      */
     private function signalWorkerProcessShouldStop(): void
     {
