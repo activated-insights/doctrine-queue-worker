@@ -79,7 +79,7 @@ class Worker extends IlluminateWorker
         try {
             $connection->executeQuery($connection->getDatabasePlatform()->getDummySelectSQL());
             $ping = true;
-        } catch (Exception $e) {
+        } catch (Exception) {
             $ping = false;
         }
 
