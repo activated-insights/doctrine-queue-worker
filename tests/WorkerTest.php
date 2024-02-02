@@ -109,6 +109,7 @@ class WorkerTest extends TestCase
     public function runNextJob_DatabaseConnectionClosed_ShouldReOpenConnection(): void
     {
         // Assemble
+        $this->entityManager->shouldReceive('getConnection')->andReturn($this->connection)->once();
         $this->entityManager->shouldReceive('isOpen')->andReturn(true)->once();
         $this->entityManager->shouldReceive('clear')->once();
 
@@ -137,6 +138,7 @@ class WorkerTest extends TestCase
     public function runNextJob_EntityManagerAndConnectionOpen_ShouldClearEntityManager(): void
     {
         // Assemble
+        $this->entityManager->shouldReceive('getConnection')->andReturn($this->connection)->once();
         $this->entityManager->shouldReceive('isOpen')->andReturn(true)->once();
         $this->entityManager->shouldReceive('clear')->once();
 
@@ -165,6 +167,7 @@ class WorkerTest extends TestCase
     public function runNextJob_JobThrowsException_ShouldRequeueJobAndNotKillWorkerProcess(): void
     {
         // Assemble
+        $this->entityManager->shouldReceive('getConnection')->andReturn($this->connection)->once();
         $this->entityManager->shouldReceive('isOpen')->andReturn(true)->once();
         $this->entityManager->shouldReceive('clear')->once();
 
@@ -220,7 +223,6 @@ class WorkerTest extends TestCase
         );
 
         $exceptions->shouldIgnoreMissing();
-        $this->entityManager->shouldReceive('getConnection')->andReturn($this->connection);
     }
 
     protected function tearDown(): void
@@ -233,12 +235,10 @@ class WorkerTest extends TestCase
      */
     private function prepareQueue(MockInterface $job): void
     {
-        $this->queueManager->shouldReceive('isDownForMaintenance')->andReturn(false);
-        $this->queueManager->shouldReceive('connection')->andReturn($this->queue);
-        $this->queueManager->shouldReceive('getName')->andReturn('default');
+        $this->queueManager->shouldReceive('connection')->andReturn($this->queue)->once();
 
-        $this->queue->shouldReceive('pop')->andReturn(...[$job]);
-        $this->queue->shouldReceive('getConnectionName')->andReturn('connection');
+        $this->queue->shouldReceive('pop')->andReturn($job)->once();
+        $this->queue->shouldReceive('getConnectionName')->andReturn('connection')->twice();
 
         $this->dispatcher->shouldReceive('dispatch');
     }
