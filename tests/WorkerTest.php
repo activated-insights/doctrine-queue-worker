@@ -21,39 +21,21 @@ use Pinnacle\DoctrineQueueWorker\Worker;
 
 class WorkerTest extends TestCase
 {
-    /**
-     * @var MockInterface|QueueManager
-     */
-    private MockInterface $queueManager;
+    private MockInterface|QueueManager           $queueManager;
 
-    /**
-     * @var MockInterface|Queue
-     */
-    private MockInterface $queue;
+    private MockInterface|Queue                  $queue;
 
-    /**
-     * @var MockInterface|Dispatcher
-     */
-    private MockInterface $dispatcher;
+    private MockInterface|Dispatcher             $dispatcher;
 
-    /**
-     * @var MockInterface|EntityManagerInterface
-     */
-    private MockInterface $entityManager;
+    private MockInterface|EntityManagerInterface $entityManager;
 
-    /**
-     * @var MockInterface|Connection
-     */
-    private MockInterface $connection;
+    private MockInterface|Connection             $connection;
 
-    /**
-     * @var MockInterface|AbstractPlatform
-     */
-    private MockInterface $platform;
+    private MockInterface|AbstractPlatform       $platform;
 
-    private Worker $worker;
+    private Worker                               $worker;
 
-    private WorkerOptions $workerOptions;
+    private WorkerOptions                        $workerOptions;
 
     /**
      * @test
@@ -230,10 +212,7 @@ class WorkerTest extends TestCase
         Mockery::close();
     }
 
-    /**
-     * @param MockInterface|Job $job
-     */
-    private function prepareQueue(MockInterface $job): void
+    private function prepareQueue(MockInterface|Job $job): void
     {
         $this->queueManager->shouldReceive('connection')->andReturn($this->queue)->once();
 
