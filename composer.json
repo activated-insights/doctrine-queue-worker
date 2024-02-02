@@ -16,7 +16,6 @@
         "php": "^8.0",
         "doctrine/orm": "^2.6",
         "illuminate/contracts": "^10.0",
-        "illuminate/queue": "^10.0",
         "illuminate/support": "^10.0"
     },
     "require-dev": {
