@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pinnacle\DoctrineQueueWorker\Tests;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -95,12 +96,9 @@ class WorkerTest extends TestCase
         $this->entityManager->shouldReceive('isOpen')->andReturn(true)->once();
         $this->entityManager->shouldReceive('clear')->once();
 
-        $this->platform->shouldReceive('getDummySelectSQL')->andReturn('SELECT 1')->once();
-
-        $this->connection->shouldReceive('executeQuery')->once();
-        $this->connection->shouldReceive('getDatabasePlatform')->andReturn($this->platform)->once();
-        $this->connection->shouldNotReceive('close');
-        $this->connection->shouldNotReceive('connect');
+        $this->connection->shouldReceive('getDatabasePlatform')->andThrow(DbalException::class)->once();
+        $this->connection->shouldReceive('close')->once();
+        $this->connection->shouldReceive('connect')->once();
 
         $job = Mockery::mock(Job::class);
         $job->shouldIgnoreMissing();
