@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Pinnacle\DoctrineQueueWorker\Tests;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception as DbalException;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Queue\Job;
@@ -21,44 +22,21 @@ use Pinnacle\DoctrineQueueWorker\Worker;
 
 class WorkerTest extends TestCase
 {
-    /**
-     * @var MockInterface|QueueManager
-     */
-    private MockInterface $queueManager;
+    private MockInterface|QueueManager           $queueManager;
 
-    /**
-     * @var MockInterface|Queue
-     */
-    private MockInterface $queue;
+    private MockInterface|Queue                  $queue;
 
-    /**
-     * @var MockInterface|Dispatcher
-     */
-    private MockInterface $dispatcher;
+    private MockInterface|Dispatcher             $dispatcher;
 
-    /**
-     * @var MockInterface|EntityManagerInterface
-     */
-    private MockInterface $entityManager;
+    private MockInterface|EntityManagerInterface $entityManager;
 
-    /**
-     * @var MockInterface|Connection
-     */
-    private MockInterface $connection;
+    private MockInterface|Connection             $connection;
 
-    /**
-     * @var MockInterface|Repository
-     */
-    private MockInterface $cache;
+    private MockInterface|AbstractPlatform       $platform;
 
-    /**
-     * @var MockInterface|ExceptionHandler
-     */
-    private MockInterface $exceptions;
+    private Worker                               $worker;
 
-    private Worker $worker;
-
-    private WorkerOptions $workerOptions;
+    private WorkerOptions                        $workerOptions;
 
     /**
      * @test
@@ -66,13 +44,13 @@ class WorkerTest extends TestCase
     public function runNextJob_EntityManagerIsClosed_JobRequeuedAndWorkerSetToExit(): void
     {
         // Assemble
-        $this->entityManager->shouldReceive('isOpen')->andReturn(false);
+        $this->entityManager->shouldReceive('isOpen')->andReturn(false)->once();
         $this->entityManager->shouldNotReceive('clear');
 
         $job = Mockery::mock(Job::class);
-        $job->shouldReceive('isDeleted')->andReturn(false);
-        $job->shouldReceive('isReleased')->andReturn(false);
-        $job->shouldReceive('hasFailed')->andReturn(false);
+        $job->shouldReceive('isDeleted')->andReturn(false)->once();
+        $job->shouldReceive('isReleased')->andReturn(false)->once();
+        $job->shouldReceive('hasFailed')->andReturn(false)->once();
         $job->shouldReceive('release')->once();
 
         $this->prepareQueue($job);
@@ -90,13 +68,13 @@ class WorkerTest extends TestCase
     public function runNextJob_EntityManagerClosedAndJobFailed_JobNotRequeuedAndWorkerSetToExit(): void
     {
         // Assemble
-        $this->entityManager->shouldReceive('isOpen')->andReturn(false);
+        $this->entityManager->shouldReceive('isOpen')->andReturn(false)->once();
         $this->entityManager->shouldNotReceive('clear');
 
         $job = Mockery::mock(Job::class);
-        $job->shouldReceive('isDeleted')->andReturn(false);
-        $job->shouldReceive('isReleased')->andReturn(false);
-        $job->shouldReceive('hasFailed')->andReturn(true);
+        $job->shouldReceive('isDeleted')->andReturn(false)->once();
+        $job->shouldReceive('isReleased')->andReturn(false)->once();
+        $job->shouldReceive('hasFailed')->andReturn(true)->once();
         $job->shouldNotReceive('release');
 
         $this->prepareQueue($job);
@@ -114,12 +92,13 @@ class WorkerTest extends TestCase
     public function runNextJob_DatabaseConnectionClosed_ShouldReOpenConnection(): void
     {
         // Assemble
-        $this->entityManager->shouldReceive('isOpen')->andReturn(true);
-        $this->entityManager->shouldReceive('clear');
+        $this->entityManager->shouldReceive('getConnection')->andReturn($this->connection)->once();
+        $this->entityManager->shouldReceive('isOpen')->andReturn(true)->once();
+        $this->entityManager->shouldReceive('clear')->once();
 
-        $this->connection->shouldReceive('ping')->andReturn(false);
-        $this->connection->shouldReceive('close');
-        $this->connection->shouldReceive('connect');
+        $this->connection->shouldReceive('getDatabasePlatform')->andThrow(DbalException::class)->once();
+        $this->connection->shouldReceive('close')->once();
+        $this->connection->shouldReceive('connect')->once();
 
         $job = Mockery::mock(Job::class);
         $job->shouldIgnoreMissing();
@@ -139,10 +118,14 @@ class WorkerTest extends TestCase
     public function runNextJob_EntityManagerAndConnectionOpen_ShouldClearEntityManager(): void
     {
         // Assemble
-        $this->entityManager->shouldReceive('isOpen')->andReturn(true);
-        $this->entityManager->shouldReceive('clear');
+        $this->entityManager->shouldReceive('getConnection')->andReturn($this->connection)->once();
+        $this->entityManager->shouldReceive('isOpen')->andReturn(true)->once();
+        $this->entityManager->shouldReceive('clear')->once();
 
-        $this->connection->shouldReceive('ping')->andReturn(true);
+        $this->platform->shouldReceive('getDummySelectSQL')->andReturn('SELECT 1')->once();
+
+        $this->connection->shouldReceive('executeQuery')->once();
+        $this->connection->shouldReceive('getDatabasePlatform')->andReturn($this->platform)->once();
         $this->connection->shouldNotReceive('close');
         $this->connection->shouldNotReceive('connect');
 
@@ -164,18 +147,22 @@ class WorkerTest extends TestCase
     public function runNextJob_JobThrowsException_ShouldRequeueJobAndNotKillWorkerProcess(): void
     {
         // Assemble
-        $this->entityManager->shouldReceive('isOpen')->andReturn(true);
-        $this->entityManager->shouldReceive('clear');
+        $this->entityManager->shouldReceive('getConnection')->andReturn($this->connection)->once();
+        $this->entityManager->shouldReceive('isOpen')->andReturn(true)->once();
+        $this->entityManager->shouldReceive('clear')->once();
 
-        $this->connection->shouldReceive('ping')->andReturn(true);
+        $this->platform->shouldReceive('getDummySelectSQL')->andReturn('SELECT 1')->once();
+
+        $this->connection->shouldReceive('executeQuery')->once();
+        $this->connection->shouldReceive('getDatabasePlatform')->andReturn($this->platform)->once();
         $this->connection->shouldNotReceive('close');
         $this->connection->shouldNotReceive('connect');
 
         $job = Mockery::mock(Job::class);
-        $job->shouldReceive('handle')->andThrow(new Exception('test'));
-        $job->shouldReceive('isDeleted')->andReturn(false);
-        $job->shouldReceive('isReleased')->andReturn(false);
-        $job->shouldReceive('hasFailed')->andReturn(false);
+        $job->shouldReceive('fire')->andThrow(new Exception('test'))->once();
+        $job->shouldReceive('isDeleted')->andReturn(false)->twice();
+        $job->shouldReceive('isReleased')->andReturn(false)->once();
+        $job->shouldReceive('hasFailed')->andReturn(false)->twice();
         $job->shouldReceive('release')->once();
         $job->shouldIgnoreMissing();
 
@@ -195,15 +182,15 @@ class WorkerTest extends TestCase
         $this->dispatcher     = Mockery::mock(Dispatcher::class);
         $this->entityManager  = Mockery::mock(EntityManagerInterface::class);
         $this->connection     = Mockery::mock(Connection::class);
-        $this->cache          = Mockery::mock(Repository::class);
-        $this->exceptions     = Mockery::mock(ExceptionHandler::class);
+        $this->platform       = Mockery::mock(AbstractPlatform::class);
+        $exceptions           = Mockery::mock(ExceptionHandler::class);
         $isDownForMaintenance = fn () => false;
 
         $this->worker = new Worker(
             $this->queueManager,
             $this->dispatcher,
             $this->entityManager,
-            $this->exceptions,
+            $exceptions,
             $isDownForMaintenance
         );
         $this->workerOptions = new WorkerOptions(
@@ -215,8 +202,7 @@ class WorkerTest extends TestCase
             3
         );
 
-        $this->exceptions->shouldIgnoreMissing();
-        $this->entityManager->shouldReceive('getConnection')->andReturn($this->connection);
+        $exceptions->shouldIgnoreMissing();
     }
 
     protected function tearDown(): void
@@ -224,15 +210,13 @@ class WorkerTest extends TestCase
         Mockery::close();
     }
 
-    /**
-     * @param MockInterface|Job $job
-     */
-    private function prepareQueue(MockInterface $job): void
+    private function prepareQueue(MockInterface|Job $job): void
     {
-        $this->queueManager->shouldReceive('isDownForMaintenance')->andReturn(false);
-        $this->queueManager->shouldReceive('connection')->andReturn($this->queue);
-        $this->queueManager->shouldReceive('getName')->andReturn('default');
+        $this->queueManager->shouldReceive('connection')->andReturn($this->queue)->once();
 
-        $this->queue->shouldReceive('pop')->andReturn(...[$job]);
+        $this->queue->shouldReceive('pop')->andReturn($job)->once();
+        $this->queue->shouldReceive('getConnectionName')->andReturn('connection')->twice();
+
+        $this->dispatcher->shouldReceive('dispatch');
     }
 }
