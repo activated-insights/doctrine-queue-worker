@@ -11,6 +11,12 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          ini-values: assert.exception=1, zend.assertions=1
+
       - name: Cache Composer packages
         uses: actions/cache@v2
         with:
@@ -27,5 +33,4 @@ jobs:
           bootstrap: vendor/autoload.php
           configuration: phpunit.xml
           version: 9
-          php_version: 8.0
-
+          php_version: 8.2
