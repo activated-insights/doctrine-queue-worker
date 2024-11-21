@@ -7,6 +7,10 @@ jobs:
     name: PHPUnit Unit Tests
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        php: [ '8.2', '8.3', '8.4' ]
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -14,14 +18,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.2
-
-      - name: Cache Composer packages
-        uses: actions/cache@v2
-        with:
-          path: /home/runner/.composer/cache/files
-          key: composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: composer-
+          php-version: ${{ matrix.php }}
 
       - name: Install Composer dependencies
         run: composer install --dev --no-interaction --no-progress
@@ -32,4 +29,4 @@ jobs:
           bootstrap: vendor/autoload.php
           configuration: phpunit.xml
           version: 9
-          php_version: 8.2
+          php_version: ${{ matrix.php }}
