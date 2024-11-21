@@ -1,5 +1,5 @@
 # doctrine-queue-worker
-**doctrine-queue-worker** is a package intended to address common issues with running Laravel 10.x queue worker processes with an application that interacts with the Doctrine ORM.
+**doctrine-queue-worker** is a package intended to address common issues with running Laravel 11.x queue worker processes with an application that interacts with the Doctrine ORM.
 
 ### Features
 
