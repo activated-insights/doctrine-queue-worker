@@ -14,7 +14,7 @@
     ],
     "require": {
         "php": "^8.2",
-        "doctrine/orm": "^2.6",
+        "doctrine/orm": "^3.5",
         "illuminate/contracts": "^11.0",
         "illuminate/queue": "^v11.0",
         "illuminate/support": "^11.0"

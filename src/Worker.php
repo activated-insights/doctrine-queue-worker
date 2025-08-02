@@ -6,13 +6,14 @@ namespace Pinnacle\DoctrineQueueWorker;
 
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\Exception\EntityManagerClosed;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Queue\Factory as QueueManager;
 use Illuminate\Contracts\Queue\Job;
 use Illuminate\Queue\Worker as IlluminateWorker;
 use Illuminate\Queue\WorkerOptions;
+use RuntimeException;
 use Throwable;
 
 class Worker extends IlluminateWorker
@@ -54,7 +55,7 @@ class Worker extends IlluminateWorker
     /**
      * Asserts that the EntityManager is not closed.
      *
-     * @throws ORMException If the EntityManager is closed.
+     * @throws EntityManagerClosed If the EntityManager is closed.
      */
     private function assertEntityManagerIsOpen(): void
     {
@@ -62,7 +63,7 @@ class Worker extends IlluminateWorker
             return;
         }
 
-        throw new ORMException('The entity manager is closed.');
+        throw new EntityManagerClosed('The entity manager is closed.');
     }
 
     /**
@@ -74,18 +75,20 @@ class Worker extends IlluminateWorker
     private function ensureDatabaseConnectionIsOpen(): void
     {
         $connection = $this->entityManager->getConnection();
+        $dummySql   = $connection->getDatabasePlatform()->getDummySelectSQL();
 
-        // This replicates what the deprecated ping() function used to do.
         try {
-            $connection->executeQuery($connection->getDatabasePlatform()->getDummySelectSQL());
-            $ping = true;
-        } catch (Exception) {
-            $ping = false;
-        }
-
-        if (!$ping) {
+            // Check if the connection is active
+            $connection->executeQuery($dummySql);
+        } catch (Throwable) {
+            // Connection is dead, close and attempt to reconnect.
             $connection->close();
-            $connection->connect();
+
+            try {
+                $connection->executeQuery($dummySql);
+            } catch (Exception $exception) {
+                throw new RuntimeException('Failed to reconnect to the database', $exception->getCode(), $exception);
+            }
         }
     }
 
