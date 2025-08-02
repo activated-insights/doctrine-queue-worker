@@ -127,7 +127,6 @@ class WorkerTest extends TestCase
         $this->connection->shouldReceive('executeQuery')->once();
         $this->connection->shouldReceive('getDatabasePlatform')->andReturn($this->platform)->once();
         $this->connection->shouldNotReceive('close');
-        $this->connection->shouldNotReceive('executeQuery')->twice();
 
         $job = Mockery::mock(Job::class);
         $job->shouldIgnoreMissing();
@@ -156,7 +155,6 @@ class WorkerTest extends TestCase
         $this->connection->shouldReceive('executeQuery')->once();
         $this->connection->shouldReceive('getDatabasePlatform')->andReturn($this->platform)->once();
         $this->connection->shouldNotReceive('close');
-        $this->connection->shouldNotReceive('executeQuery')->twice();
 
         $job = Mockery::mock(Job::class);
         $job->shouldReceive('fire')->andThrow(new Exception('test'))->once();
