@@ -78,7 +78,7 @@ class Worker extends IlluminateWorker
 
         try {
             // Check if the connection is active
-            $connection->executeQuery('SELECT 1');
+            $connection->executeQuery($connection->getDatabasePlatform()->getDummySelectSQL());
             $ping = true;
         } catch (Exception) {
             $ping = false;
