@@ -13,7 +13,6 @@ use Illuminate\Contracts\Queue\Factory as QueueManager;
 use Illuminate\Contracts\Queue\Job;
 use Illuminate\Queue\Worker as IlluminateWorker;
 use Illuminate\Queue\WorkerOptions;
-use RuntimeException;
 use Throwable;
 
 class Worker extends IlluminateWorker
@@ -76,6 +75,7 @@ class Worker extends IlluminateWorker
     {
         $connection = $this->entityManager->getConnection();
 
+        // This replicates what the deprecated ping() function used to do.
         try {
             // Check if the connection is active
             $connection->executeQuery($connection->getDatabasePlatform()->getDummySelectSQL());
@@ -87,6 +87,8 @@ class Worker extends IlluminateWorker
         if (!$ping) {
             // If it's not active, close and attempt to reconnect with a simple query.
             $connection->close();
+            // getDatabasePlatform can throw if there's no connection,
+            // so this avoids that possibility so that it can successfully reconnect.
             $connection->executeQuery('SELECT 1');
         }
     }

@@ -32,6 +32,8 @@ class WorkerTest extends TestCase
 
     private MockInterface|Connection             $connection;
 
+    private MockInterface|AbstractPlatform       $platform;
+
     private Worker                               $worker;
 
     private WorkerOptions                        $workerOptions;
@@ -94,9 +96,9 @@ class WorkerTest extends TestCase
         $this->entityManager->shouldReceive('isOpen')->andReturn(true)->once();
         $this->entityManager->shouldReceive('clear')->once();
 
-        $this->connection->shouldReceive('executeQuery')->andThrow(ConnectionException::class)->once();
+        $this->connection->shouldReceive('getDatabasePlatform')->andThrow(ConnectionException::class)->once();
         $this->connection->shouldReceive('close')->once();
-        $this->connection->shouldReceive('executeQuery')->once();
+        $this->connection->shouldReceive('executeQuery')->with('SELECT 1')->once();
 
         $job = Mockery::mock(Job::class);
         $job->shouldIgnoreMissing();
@@ -120,8 +122,12 @@ class WorkerTest extends TestCase
         $this->entityManager->shouldReceive('isOpen')->andReturn(true)->once();
         $this->entityManager->shouldReceive('clear')->once();
 
-        $this->connection->shouldReceive('executeQuery')->with('SELECT 1')->once();
+        $this->platform->shouldReceive('getDummySelectSQL')->andReturn('SELECT 1')->once();
+
+        $this->connection->shouldReceive('executeQuery')->once();
+        $this->connection->shouldReceive('getDatabasePlatform')->andReturn($this->platform)->once();
         $this->connection->shouldNotReceive('close');
+        $this->connection->shouldNotReceive('executeQuery')->twice();
 
         $job = Mockery::mock(Job::class);
         $job->shouldIgnoreMissing();
@@ -145,8 +151,12 @@ class WorkerTest extends TestCase
         $this->entityManager->shouldReceive('isOpen')->andReturn(true)->once();
         $this->entityManager->shouldReceive('clear')->once();
 
-        $this->connection->shouldReceive('executeQuery')->with('SELECT 1')->once();
+        $this->platform->shouldReceive('getDummySelectSQL')->andReturn('SELECT 1')->once();
+
+        $this->connection->shouldReceive('executeQuery')->once();
+        $this->connection->shouldReceive('getDatabasePlatform')->andReturn($this->platform)->once();
         $this->connection->shouldNotReceive('close');
+        $this->connection->shouldNotReceive('executeQuery')->twice();
 
         $job = Mockery::mock(Job::class);
         $job->shouldReceive('fire')->andThrow(new Exception('test'))->once();
