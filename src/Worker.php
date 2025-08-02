@@ -75,17 +75,16 @@ class Worker extends IlluminateWorker
     private function ensureDatabaseConnectionIsOpen(): void
     {
         $connection = $this->entityManager->getConnection();
-        $dummySql   = $connection->getDatabasePlatform()->getDummySelectSQL();
 
         try {
             // Check if the connection is active
-            $connection->executeQuery($dummySql);
+            $connection->executeQuery('SELECT 1');
         } catch (Throwable) {
             // Connection is dead, close and attempt to reconnect.
             $connection->close();
 
             try {
-                $connection->executeQuery($dummySql);
+                $connection->executeQuery('SELECT 1');
             } catch (Exception $exception) {
                 throw new RuntimeException('Failed to reconnect to the database', $exception->getCode(), $exception);
             }
