@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Pinnacle\DoctrineQueueWorker\Tests;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception as DbalException;
+use Doctrine\DBAL\ConnectionException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -94,7 +94,7 @@ class WorkerTest extends TestCase
         $this->entityManager->shouldReceive('isOpen')->andReturn(true)->once();
         $this->entityManager->shouldReceive('clear')->once();
 
-        $this->connection->shouldReceive('executeQuery')->andThrow(DbalException::class)->once();
+        $this->connection->shouldReceive('executeQuery')->andThrow(ConnectionException::class)->once();
         $this->connection->shouldReceive('close')->once();
         $this->connection->shouldReceive('executeQuery')->once();
 

@@ -79,15 +79,15 @@ class Worker extends IlluminateWorker
         try {
             // Check if the connection is active
             $connection->executeQuery('SELECT 1');
-        } catch (Throwable) {
-            // Connection is dead, close and attempt to reconnect.
-            $connection->close();
+            $ping = true;
+        } catch (Exception) {
+            $ping = false;
+        }
 
-            try {
-                $connection->executeQuery('SELECT 1');
-            } catch (Exception $exception) {
-                throw new RuntimeException('Failed to reconnect to the database', $exception->getCode(), $exception);
-            }
+        if (!$ping) {
+            // If it's not active, close and attempt to reconnect with a simple query.
+            $connection->close();
+            $connection->executeQuery('SELECT 1');
         }
     }
 
