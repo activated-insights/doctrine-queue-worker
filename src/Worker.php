@@ -6,7 +6,7 @@ namespace Pinnacle\DoctrineQueueWorker;
 
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\Exception\EntityManagerClosed;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Queue\Factory as QueueManager;
@@ -54,7 +54,7 @@ class Worker extends IlluminateWorker
     /**
      * Asserts that the EntityManager is not closed.
      *
-     * @throws ORMException If the EntityManager is closed.
+     * @throws EntityManagerClosed If the EntityManager is closed.
      */
     private function assertEntityManagerIsOpen(): void
     {
@@ -62,7 +62,7 @@ class Worker extends IlluminateWorker
             return;
         }
 
-        throw new ORMException('The entity manager is closed.');
+        throw new EntityManagerClosed('The entity manager is closed.');
     }
 
     /**
@@ -77,6 +77,7 @@ class Worker extends IlluminateWorker
 
         // This replicates what the deprecated ping() function used to do.
         try {
+            // Check if the connection is active
             $connection->executeQuery($connection->getDatabasePlatform()->getDummySelectSQL());
             $ping = true;
         } catch (Exception) {
@@ -84,8 +85,11 @@ class Worker extends IlluminateWorker
         }
 
         if (!$ping) {
+            // If it's not active, close and attempt to reconnect with a simple query.
             $connection->close();
-            $connection->connect();
+            // getDatabasePlatform can throw if there's no connection,
+            // so this avoids that possibility so that it can successfully reconnect.
+            $connection->executeQuery('SELECT 1');
         }
     }
 
