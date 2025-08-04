@@ -15,9 +15,9 @@
     "require": {
         "php": "^8.2",
         "doctrine/orm": "^3.5",
-        "illuminate/contracts": "^12.21",
-        "illuminate/queue": "^v12.21",
-        "illuminate/support": "^v12.21"
+        "illuminate/contracts": "^12.0",
+        "illuminate/queue": "^v12.0",
+        "illuminate/support": "^v12.0"
     },
     "require-dev": {
         "mockery/mockery": "^1.3.1",
